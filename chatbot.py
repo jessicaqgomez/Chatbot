@@ -50,8 +50,11 @@ def echo(update: Update, _: CallbackContext) -> None:
 
 def respuesta( update: Update, context):
     mensaje = str(update.message.text.upper())
-    if mensaje.__eq__("JESSICA"):
-        update.message.reply_text("Hola",MENSAJE,"EN QUÉ PUEDO AYUDARTE")
+    if (any(char.isdigit() for char in mensaje)):
+        update.message.reply_text("tu nombre contiene elementos no validos")
+    else:
+        resp= "hola "+mensaje.lower()+" en qué puedo ayudarte"
+        update.message.reply_text(resp)
 
 
 
@@ -68,7 +71,7 @@ def main() -> None:
     dispatcher.add_handler(CommandHandler("help", help_command))
 
     # on non command i.e message - echo the message on Telegram
-    #dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, respuesta))
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, respuesta))
     #dispatcher.add_handler(CommandHandler("Hola, cuál es tu nombre",respuesta))
     # Start the Bot
     updater.start_polling()
