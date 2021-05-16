@@ -17,6 +17,8 @@ bot.
 
 import logging
 import pandas as pd
+import io
+import re
 from string import punctuation, digits
 
 from telegram import Update, ForceReply
@@ -63,8 +65,70 @@ def validacion_string(cadena):
 
 
 def registro(update: Update, context):
+    mensaje = "Para registrarte por favor escribe: /datos y separado por espacios escribe tu nombre, apellido y url de tu trabajo. Por ejemplo: /datos Jessica Quintero mitrabajo.docx"
+    update.message.reply_text(mensaje)
+
+def datos(update: Update, context:CallbackContext):
+    
+    validar_nombre = not validacion_string(str(context.args[0]))
+    validar_apellido = not validacion_string(str(context.args[1]))
+    if(validar_nombre and validar_apellido):
+        identificador = ultimo_id()
+        usuario = {'id':[identificador],'nombre': [str(context.args[0])],'apellido':[str(context.args[1])],'documento':[str(context.args[2])],'estado': ['enviado']}
+        
+        if crear_usuario(usuario):
+            update.message.reply_text("su identificador es "+ str(identificador))
+    else:
+        if ~validar_nombre:
+            update.message.reply_text("el nombre no es valido, por favor ingresa los datos de nuevo usando /datos")
+        else:
+            update.message.reply_text("el apellido no es valido, por favor ingresa los datos de nuevo usando /datos")
+
+def crear_usuario(diccionario):
+    df = pd.DataFrame(diccionario)
+    df.to_csv('Datos_alumnos.csv', sep=';',columns=['id','nombre','apellido','documento','estado'],mode='a',header=False)
     return True
 
+def consulta(update: Update, context):
+    mensaje = "Para consultar el estado de tu trabajo por favor escribe: /id y, separado por espacio, tu numero de identificación. Por ejemplo: /id 124 "
+    update.message.reply_text(mensaje)
+
+def validar_int(numero):
+    if numero.isdigit():
+        return True
+    return False
+
+
+def identificador(update: Update, context):
+    numero_identificador = context.args[0]
+    if (validar_int(numero_identificador)):
+        estado = buscar_documento(int(numero_identificador))
+        if estado is None:
+            update.message.reply_text("el identificador no existe, por favor ingrese un identificador existente")
+        else:
+            update.message.reply_text("el estado de su documento es:"+ estado)
+    else:
+        update.message.reply_text("el numero identificador es invalido, por favor vuelve a ingresarlo usando la instrucción /id")
+
+def ultimo_id():
+    dataframe=pd.read_csv('Datos_alumnos.csv',delimiter=";")
+    dataframe = dataframe.dropna()
+    dataframe.id = dataframe.id.astype(int)
+    busqueda = str((dataframe[:])['id'])
+    ultimo= int((re.split("[ \n]", busqueda))[4])+1
+    return ultimo
+
+
+
+def buscar_documento(id):
+    dataframe=pd.read_csv('Datos_alumnos.csv',delimiter=";")
+    dataframe = dataframe.dropna()
+    dataframe.id = dataframe.id.astype(int)
+    busqueda = str(dataframe['estado'].where(dataframe['id']==id))
+    estado = (re.split("[ \n]", busqueda))[4]
+    if estado.lower().__eq__("nan"):
+        estado = None
+    return estado
 
 def main() -> None:
     """Start the bot."""
