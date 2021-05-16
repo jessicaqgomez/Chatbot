@@ -126,6 +126,9 @@ def buscar_documento(id):
     dataframe = dataframe.dropna()
     dataframe.id = dataframe.id.astype(int)
     busqueda = str(dataframe['estado'].where(dataframe['id']==id))
+    prueba = str(dataframe['estado'].where(dataframe['id']==id).values)
+    print(prueba)
+    #print(set(re.split("[ \n]", busqueda)))
     estado = (re.split("[ \n]", busqueda))[4]
     if estado.lower().__eq__("nan"):
         estado = None
