@@ -30,32 +30,41 @@ logging.basicConfig(
 )
 
 logger = logging.getLogger(__name__)
-
+estado = 1
+nombre = ""
 
 # Define a few command handlers. These usually take the two arguments update and
 # context.
 def start(update: Update, _: CallbackContext) -> None:
     """Send a message when the command /start is issued."""
-    
+    global estado
+    estado = 1
     update.message.reply_markdown_v2(
         fr'Hola, soy tu profesor de la universidad de Piltover, ¿cómo te llamas?',
         reply_markup=ForceReply(selective=True),
-        
     )
 
 
 def help_command(update: Update, _: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Para  iniciar usa /start, para registrarte usa /registro y para consultar usa /consulta')
+    update.message.reply_text('Para  iniciar  de nuevo usa /start\n Para registrarte usa /registro\n Para consultar usa /consulta')
 
 
 
 def saludo( update: Update, context):
-    nombre = str(update.message.text.upper())
-    if validacion_string(nombre):
+    temp = str(update.message.text.upper())
+    global estado
+    global nombre
+    if validacion_string(temp):
         update.message.reply_text("tu nombre contiene elementos no validos, por favor ingresalo nuevamente")
     else:
-        resp= "Hola "+nombre.lower()+", Si deseas registrarte escribe '/registro', Si ya te encuentras registrado y deseas consultar el estado de tu trabajo escribe /consulta"
+        if estado == 1:
+            nombre = temp.lower()
+            resp= "Hola "+nombre+", Si deseas registrarte escribe '/registro', Si ya te encuentras registrado y deseas consultar el estado de tu trabajo escribe /consulta"
+        elif estado == 2:
+            resp = "Hola "+nombre+", continua con tu registro en el sistema, o si deseas terminarlo y cambiar a consulta escribe /consulta"
+        else:
+            resp = "Hola "+nombre+", continua con la consulta del estado de tu documento, o si deseas registrarte escribe /registro para cambiar de proceso"
         update.message.reply_text(resp)
 
 def validacion_string(cadena):
@@ -67,14 +76,19 @@ def validacion_string(cadena):
 
 
 def registro(update: Update, context):
-    mensaje = "Para registrarte por favor escribe: /datos y separado por espacios escribe tu nombre, apellido y url de tu trabajo. Por ejemplo: /datos Jessica Quintero mitrabajo.docx"
+    global estado
+    estado = 2
+    mensaje = "Para registrarte por favor escribe:\n /datos y separado por espacios escribe tu nombre, apellido y url de tu trabajo.\n Por ejemplo: /datos Jessica Quintero mitrabajo.docx"
     update.message.reply_text(mensaje)
 
 def datos(update: Update, context:CallbackContext):
-    
+    global estado
+    estado = 2
     validar_nombre = not validacion_string(str(context.args[0]))
     validar_apellido = not validacion_string(str(context.args[1]))
-    if(validar_nombre and validar_apellido):
+    if context.args.__len__()<3:
+        update.message.reply_text("los datos están incompletos, por favor verificar e ingresar todos los datos correctamente")
+    elif(validar_nombre and validar_apellido):
         identificador = ultimo_id()
         usuario = {'id':identificador,'nombre': str(context.args[0]),'apellido':str(context.args[1]),'documento':str(context.args[2]),'estado': 'enviado'}
         
@@ -88,12 +102,13 @@ def datos(update: Update, context:CallbackContext):
 
 def crear_usuario(diccionario):
     df = pd.DataFrame(diccionario,index=[0])
-    
     df.to_csv('Datos_alumnos.csv',index=False, sep=';',mode='a',header=False)
     return True
 
 def consulta(update: Update, context):
-    mensaje = "Para consultar el estado de tu trabajo por favor escribe: /id y, separado por espacio, tu numero de identificación. Por ejemplo: /id 124 "
+    global estado
+    estado = 3
+    mensaje = "Para consultar el estado de tu trabajo por favor escribe:\n /id y, separado por espacio, tu numero de identificación.\n Por ejemplo: /id 124 "
     update.message.reply_text(mensaje)
 
 def validar_int(numero):
@@ -103,13 +118,15 @@ def validar_int(numero):
 
 
 def identificador(update: Update, context):
+    global estado
+    estado = 3
     numero_identificador = context.args[0]
     if (validar_int(numero_identificador)):
-        estado = buscar_documento(int(numero_identificador))
-        if estado is None:
+        estado_doc = buscar_documento(int(numero_identificador))
+        if estado_doc is None:
             update.message.reply_text("el identificador no existe, por favor ingrese un identificador existente")
         else:
-            update.message.reply_text("el estado de su documento es:"+ estado)
+            update.message.reply_text("el estado de su documento es:"+ estado_doc)
     else:
         update.message.reply_text("el numero identificador es invalido, por favor vuelve a ingresarlo usando la instrucción /id")
 
