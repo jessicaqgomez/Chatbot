@@ -1,6 +1,5 @@
 ﻿id;nombre;apellido;documento;estado
-1;Jessica;Quintero;Trabajo.docx;Calificado
-;;;;
-;;;;
-;;;;
+1;Jessica;Quintero;mitrabajo.docx;Calificado
+2;Laura;Zuluaga;mitrabajo2.docx;Enviado
+3;Alejando;Victoria;mitrabajo3.docx;Revisado
 ;;;;
