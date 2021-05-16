@@ -79,6 +79,7 @@ def saludo( update: Update, context:CallbackContext):
 def regular_choice(update: Update, context: CallbackContext) -> int:
     text = update.message.text
     context.user_data['choice'] = text
+    print(context.user_data['choice'])
     update.message.reply_text(f'Your {text.lower()}? Yes, I would love to hear about that!')
 
     return TYPING_REPLY
