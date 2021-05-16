@@ -93,10 +93,6 @@ def custom_choice(update: Update, _: CallbackContext) -> int:
     return TYPING_CHOICE
 
 
-def search_information(codigo):
-    estado = calificado
-    return estado
-
 def received_information(update: Update, context: CallbackContext) -> int:
     user_data = context.user_data
     text = update.message.text
