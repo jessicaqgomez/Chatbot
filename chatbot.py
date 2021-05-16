@@ -16,6 +16,8 @@ bot.
 """
 
 import logging
+import pandas as pd
+from string import punctuation, digits
 
 from telegram import Update, ForceReply
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
@@ -32,30 +34,36 @@ logger = logging.getLogger(__name__)
 # context.
 def start(update: Update, _: CallbackContext) -> None:
     """Send a message when the command /start is issued."""
-    user = update.effective_user
     update.message.reply_markdown_v2(
-        fr'Hola, cual es tu nombre?',
+        fr'Hola, soy tu profesor de la universidad de Piltover, ¿cómo te llamas?',
         reply_markup=ForceReply(selective=True),
     )
 
 
 def help_command(update: Update, _: CallbackContext) -> None:
     """Send a message when the command /help is issued."""
-    update.message.reply_text('Help!')
+    update.message.reply_text('Para  iniciar usa /start, para registrarte usa /registro y para consultar usa /consulta')
 
 
-def echo(update: Update, _: CallbackContext) -> None:
-    """Echo the user message."""
-    update.message.reply_text(update.message.text)
 
-def respuesta( update: Update, context):
-    mensaje = str(update.message.text.upper())
-    if (any(char.isdigit() for char in mensaje)):
-        update.message.reply_text("tu nombre contiene elementos no validos")
+def saludo( update: Update, context):
+    nombre = str(update.message.text.upper())
+    if validacion_string(nombre):
+        update.message.reply_text("tu nombre contiene elementos no validos, por favor ingresalo nuevamente")
     else:
-        resp= "hola "+mensaje.lower()+" en qué puedo ayudarte"
+        resp= "Hola "+nombre.lower()+", Si deseas registrarte escribe '/registro', Si ya te encuentras registrado y deseas consultar el estado de tu trabajo escribe /consulta"
         update.message.reply_text(resp)
 
+def validacion_string(cadena):
+
+    invalid_element = len(set(cadena).intersection(punctuation+digits))
+    if invalid_element>0:
+        return True
+    return False
+
+
+def registro(update: Update, context):
+    return True
 
 
 def main() -> None:
@@ -69,16 +77,16 @@ def main() -> None:
     # on different commands - answer in Telegram
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help_command))
+    dispatcher.add_handler(CommandHandler("registro",registro))
+    dispatcher.add_handler(CommandHandler("consulta",consulta))
+    dispatcher.add_handler(CommandHandler("datos",datos))
+    dispatcher.add_handler(CommandHandler("id", identificador))
+    #dispatcher.add_handler(CommandHandler("",))
 
     # on non command i.e message - echo the message on Telegram
-    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, respuesta))
-    #dispatcher.add_handler(CommandHandler("Hola, cuál es tu nombre",respuesta))
-    # Start the Bot
+    dispatcher.add_handler(MessageHandler(Filters.text & ~Filters.command, saludo))
+    
     updater.start_polling()
-
-    # Run the bot until you press Ctrl-C or the process receives SIGINT,
-    # SIGTERM or SIGABRT. This should be used most of the time, since
-    # start_polling() is non-blocking and will stop the bot gracefully.
     updater.idle()
 
 
