@@ -86,7 +86,7 @@ def datos(update: Update, context:CallbackContext):
 
 def crear_usuario(diccionario):
     df = pd.DataFrame(diccionario)
-    df.to_csv('Datos_alumnos.csv', sep=';',columns=['id','nombre','apellido','documento','estado'],mode='a',header=False)
+    df[1:].to_csv('Datos_alumnos.csv', sep=';',mode='a',header=False)
     return True
 
 def consulta(update: Update, context):
