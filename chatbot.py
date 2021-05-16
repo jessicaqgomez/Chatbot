@@ -74,7 +74,7 @@ def datos(update: Update, context:CallbackContext):
     validar_apellido = not validacion_string(str(context.args[1]))
     if(validar_nombre and validar_apellido):
         identificador = ultimo_id()
-        usuario = {'id':[identificador],'nombre': [str(context.args[0])],'apellido':[str(context.args[1])],'documento':[str(context.args[2])],'estado': ['enviado']}
+        usuario = {'id':identificador,'nombre': str(context.args[0]),'apellido':str(context.args[1]),'documento':str(context.args[2]),'estado': 'enviado'}
         
         if crear_usuario(usuario):
             update.message.reply_text("su identificador es "+ str(identificador))
@@ -85,8 +85,9 @@ def datos(update: Update, context:CallbackContext):
             update.message.reply_text("el apellido no es valido, por favor ingresa los datos de nuevo usando /datos")
 
 def crear_usuario(diccionario):
-    df = pd.DataFrame(diccionario)
-    df[1:].to_csv('Datos_alumnos.csv', sep=';',mode='a',header=False)
+    df = pd.DataFrame(diccionario,index=[0])
+    
+    df.to_csv('Datos_alumnos.csv',index=False, sep=';',mode='a',header=False)
     return True
 
 def consulta(update: Update, context):
@@ -114,7 +115,7 @@ def ultimo_id():
     dataframe=pd.read_csv('Datos_alumnos.csv',delimiter=";")
     dataframe = dataframe.dropna()
     dataframe.id = dataframe.id.astype(int)
-    busqueda = str((dataframe[:])['id'])
+    busqueda = str(dataframe.tail(1)['id'])
     ultimo= int((re.split("[ \n]", busqueda))[4])+1
     return ultimo
 
